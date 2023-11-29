@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 def create_epic_name(product, offer, go_live_date, end_date):
-    epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date} - {end_date}"
+    epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date.strftime('%d %b %y')} - {end_date.strftime('%d %b %y')}"
     return epic_name
 
 def create_story_ticket(name, overview, label, due_date, team, additional_info=None):
@@ -29,6 +29,7 @@ def generate_csv(epic_name, overview, go_live_date, end_date):
         create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Agora Shop and Robotics", additional_info={"Label": ["Trading", "AgoraGTM", "Loyalty"], "Component": "Shop"}),
         create_story_ticket("SEO | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Search", additional_info={"Label": ["Trading", "SEO"], "Component": "Search (SEO/SEM)"}),
         create_story_ticket("SEM | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Search", additional_info={"Label": ["Trading", "SEM"], "Component": "Search (SEO/SEM)"}),
+        create_story_ticket("Pre-Release Review | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=2), "DIGITAL Partner Agency Model"),
     ]
 
     df = pd.DataFrame(tickets)
@@ -51,10 +52,14 @@ def main():
         generate_csv(epic_name, overview, go_live_date, end_date)
         st.success("CSV created successfully!")
 
+    # Create an empty container to dynamically update its content
+    download_container = st.empty()
+
     if st.button("Download"):
-        st.markdown("### Download CSV")
+        # Update the container content after the "Download" button is clicked
+        download_container.markdown("### Download CSV")
         with open("jira_bulk_upload.csv", "rb") as file:
-            st.download_button(label="Click to Download", data=file, key="download_button")
+            download_container.download_button(label="Click to Download", data=file, key="download_button", file_name="jira_bulk_upload.csv")
 
 if __name__ == "__main__":
     main()
