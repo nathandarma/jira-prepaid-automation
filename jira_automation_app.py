@@ -17,10 +17,9 @@ def create_story_ticket(name, overview, label, due_date, team, additional_info=N
         ticket.update(additional_info)
     return ticket
 
-def generate_csv(epic_name, overview):
+def generate_csv(epic_name, overview, go_live_date):
     tickets = [
         create_story_ticket("Offer | " + epic_name, overview, "Trading", go_live_date, "DIGITAL Partner Agency Model"),
-        create_story_ticket("Copy | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(weeks=4), "DIGITAL Partner Agency Model"),
         # ... (similarly create other tickets)
     ]
 
@@ -41,7 +40,7 @@ def main():
 
     if st.button("Submit"):
         epic_name = create_epic_name(product, offer, go_live_date, end_date)
-        generate_csv(epic_name, overview)
+        generate_csv(epic_name, overview, go_live_date)
         st.success("CSV created successfully!")
 
     if st.button("Download"):
