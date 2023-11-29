@@ -47,19 +47,18 @@ def main():
     go_live_date = st.date_input("Go-Live Date")
     end_date = st.date_input("End Date")
 
-    if st.button("Submit"):
+    submit_clicked = st.button("Submit")
+
+    if submit_clicked:
         epic_name = create_epic_name(product, offer, go_live_date, end_date)
         generate_csv(epic_name, overview, go_live_date, end_date)
         st.success("CSV created successfully!")
 
-    # Create an empty container to dynamically update its content
-    download_container = st.empty()
-
-    if st.button("Download"):
-        # Update the container content after the "Download" button is clicked
-        download_container.markdown("### Download CSV")
+    if submit_clicked:
+        # Display the "Download CSV" heading and button only if the "Submit" button has been clicked
+        st.markdown("### Download CSV")
         with open("jira_bulk_upload.csv", "rb") as file:
-            download_container.download_button(label="Click to Download", data=file, key="download_button", file_name="jira_bulk_upload.csv")
+            st.download_button(label="Click to Download", data=file, key="download_button", file_name="jira_bulk_upload.csv")
 
 if __name__ == "__main__":
     main()
