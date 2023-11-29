@@ -35,11 +35,15 @@ def generate_csv(epic_name, overview, go_live_date, end_date):
     df = pd.DataFrame(tickets)
     csv_content = df.to_csv(index=False)
 
-    with open("jira_bulk_upload.csv", "w") as csv_file:
+    csv_file_name = f"{epic_name.replace(' ', '_')}.csv"  # Remove spaces and use as the file name
+
+    with open(csv_file_name, "w") as csv_file:
         csv_file.write(csv_content)
 
+    return csv_file_name
+
 def main():
-    st.title("Jira Automation with Streamlit")
+    st.title("Batch Creation of Pre-Paid Trading Tickets")
 
     product = st.text_input("Product")
     offer = st.text_input("Offer")
@@ -51,14 +55,14 @@ def main():
 
     if submit_clicked:
         epic_name = create_epic_name(product, offer, go_live_date, end_date)
-        generate_csv(epic_name, overview, go_live_date, end_date)
+        csv_file_name = generate_csv(epic_name, overview, go_live_date, end_date)
         st.success("CSV created successfully!")
 
     if submit_clicked:
         # Display the "Download CSV" heading and button only if the "Submit" button has been clicked
         st.markdown("### Download CSV")
-        with open("jira_bulk_upload.csv", "rb") as file:
-            st.download_button(label="Click to Download", data=file, key="download_button", file_name="jira_bulk_upload.csv")
+        with open(csv_file_name, "rb") as file:
+            st.download_button(label="Click to Download", data=file, key="download_button", file_name=csv_file_name)
 
 if __name__ == "__main__":
     main()
