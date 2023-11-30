@@ -7,7 +7,7 @@ def create_epic_name(product, offer, go_live_date, end_date):
 
 def create_story_ticket(name, overview, label, due_date, team, additional_info=None):
     ticket = {
-        "Name": name,
+        "Summary": name,
         "Description": overview,
         "Label": label,
         "Due Date": due_date,
@@ -33,6 +33,7 @@ def generate_csv(epic_name, overview, go_live_date, end_date):
     ]
 
     df = pd.DataFrame(tickets)
+    df["Issue Type"] = "Story"  # Add "Issue Type" column and assign "Story" to all entries
     csv_content = df.to_csv(index=False)
 
     csv_file_name = f"{epic_name.replace(' ', '_')}.csv"  # Remove spaces and use as the file name
