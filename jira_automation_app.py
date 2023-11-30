@@ -47,7 +47,7 @@ def main():
 
     product = st.text_input("Product")
     offer = st.text_input("Offer")
-    overview = st.text_input("Overview", type='textarea')
+    overview = st.text_area("Overview")
     go_live_date = st.date_input("Go-Live Date")
     end_date = st.date_input("End Date")
 
