@@ -5,31 +5,32 @@ def create_epic_name(product, offer, go_live_date, end_date):
     epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date.strftime('%d %b %y')} - {end_date.strftime('%d %b %y')}"
     return epic_name
 
-def create_story_ticket(name, overview, label, due_date, team, additional_info=None):
+def create_story_ticket(name, overview, label, due_date, team, epic_link, additional_info=None):
     ticket = {
         "Summary": name,
         "Description": overview,
         "Label": label,
         "Due Date": due_date,
         "Team": team,
+        "Epic Link": epic_link,
     }
     if additional_info:
         ticket.update(additional_info)
     return ticket
 
-def generate_csv(epic_name, overview, go_live_date, end_date):
+def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     tickets = [
-        create_story_ticket("Offer | " + epic_name, overview, "Trading", go_live_date, "DIGITAL Partner Agency Model"),
-        create_story_ticket("Copy | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(weeks=4), "DIGITAL Partner Agency Model"),
-        create_story_ticket("VD | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(weeks=4), "DIGITAL Partner Agency Model"),
-        create_story_ticket("Legal | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(weeks=2), "DIGITAL Partner Agency Model"),
-        create_story_ticket("AEM | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL AEM Specialists", additional_info={"Label": ["Trading", "Not-Ready"], "Component": "T.com AEM Production"}),
-        create_story_ticket("AEM Removal | " + epic_name, overview, "Trading", end_date, "DIGITAL AEM Specialists", additional_info={"Label": ["Trading", "Not-Ready"], "Component": "T.com AEM Production"}),
-        create_story_ticket("Agora | " + epic_name, overview + "\nRemember to complete and attach Agora config form: https://swimplify.co/projects/telstra/telstra-promos-form/", "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Agora Shop and Robotics", additional_info={"Label": ["Trading", "AgoraGTM"], "Component": "Shop"}),
-        create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Agora Shop and Robotics", additional_info={"Label": ["Trading", "AgoraGTM", "Loyalty"], "Component": "Shop"}),
-        create_story_ticket("SEO | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Search", additional_info={"Label": ["Trading", "SEO"], "Component": "Search (SEO/SEM)"}),
-        create_story_ticket("SEM | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Search", additional_info={"Label": ["Trading", "SEM"], "Component": "Search (SEO/SEM)"}),
-        create_story_ticket("Pre-Release Review | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=2), "DIGITAL Partner Agency Model"),
+        create_story_ticket("Offer | " + epic_name, overview, "Trading", go_live_date, "DIGITAL Partner Agency Model", epic_link),
+        create_story_ticket("Copy | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(weeks=4), "DIGITAL Partner Agency Model", epic_link),
+        create_story_ticket("VD | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(weeks=4), "DIGITAL Partner Agency Model", epic_link),
+        create_story_ticket("Legal | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(weeks=2), "DIGITAL Partner Agency Model", epic_link),
+        create_story_ticket("AEM | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL AEM Specialists", epic_link, additional_info={"Label": ["Trading", "Not-Ready"], "Component": "T.com AEM Production"}),
+        create_story_ticket("AEM Removal | " + epic_name, overview, "Trading", end_date, "DIGITAL AEM Specialists", epic_link, additional_info={"Label": ["Trading", "Not-Ready"], "Component": "T.com AEM Production"}),
+        create_story_ticket("Agora | " + epic_name, overview + "\nRemember to complete and attach Agora config form: https://swimplify.co/projects/telstra/telstra-promos-form/", "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Agora Shop and Robotics", epic_link, additional_info={"Label": ["Trading", "AgoraGTM"], "Component": "Shop"}),
+        create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Agora Shop and Robotics", epic_link, additional_info={"Label": ["Trading", "AgoraGTM", "Loyalty"], "Component": "Shop"}),
+        create_story_ticket("SEO | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Search", epic_link, additional_info={"Label": ["Trading", "SEO"], "Component": "Search (SEO/SEM)"}),
+        create_story_ticket("SEM | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=3), "DIGITAL Search", epic_link, additional_info={"Label": ["Trading", "SEM"], "Component": "Search (SEO/SEM)"}),
+        create_story_ticket("Pre-Release Review | " + epic_name, overview, "Trading", go_live_date - pd.DateOffset(days=2), "DIGITAL Partner Agency Model", epic_link),
     ]
 
     df = pd.DataFrame(tickets)
@@ -51,12 +52,13 @@ def main():
     overview = st.text_area("Overview")
     go_live_date = st.date_input("Go-Live Date")
     end_date = st.date_input("End Date")
+    epic_link = st.text_input("Epic Link (DCAEG code)")
 
     submit_clicked = st.button("Submit")
 
     if submit_clicked:
         epic_name = create_epic_name(product, offer, go_live_date, end_date)
-        csv_file_name = generate_csv(epic_name, overview, go_live_date, end_date)
+        csv_file_name = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
         st.success("CSV created successfully!")
 
     if submit_clicked:
