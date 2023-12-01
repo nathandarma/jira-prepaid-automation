@@ -3,13 +3,14 @@ import pandas as pd
 import base64
 from datetime import datetime, timedelta
 
-def create_story_ticket(name, description, labels, due_date, team):
+def create_story_ticket(name, description, labels, due_date, team, components=None):
     ticket = {
         "Name": name,
         "Description": description,
-        "Labels": " ".join(labels),
+        "Labels": labels,
         "Due Date": due_date,
         "Team": team,
+        "Components": components,
     }
     return ticket
 
@@ -30,35 +31,36 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     epic_ticket = create_story_ticket(
         epic_name,
         overview,
-        ["Epic"],
+        "Epic",
         go_live_date_str,
         "DIGITAL Partner Agency Model",
     )
 
     # Create Story tickets
     tickets = [
-        create_story_ticket("Offer | " + epic_name, overview, ["Trading"], go_live_date_str, "DIGITAL Partner Agency Model"),
-        create_story_ticket("Copy | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
-        create_story_ticket("VD | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
-        create_story_ticket("Legal | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(weeks=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
-        create_story_ticket("AEM | " + epic_name, overview, ["Trading", "Not-Ready"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL AEM Specialists"),
-        create_story_ticket("AEM Removal | " + epic_name, overview, ["Trading", "Not-Ready"], end_date_str, "DIGITAL AEM Specialists"),
-        create_story_ticket("Agora | " + epic_name, overview + "\nRemember to complete and attach Agora config form: https://swimplify.co/projects/telstra/telstra-promos-form/", ["Trading", "AgoraGTM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics"),
-        create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", ["Trading", "AgoraGTM", "Loyalty"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics"),
-        create_story_ticket("SEO | " + epic_name, overview, ["Trading", "SEO"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search"),
-        create_story_ticket("SEM | " + epic_name, overview, ["Trading", "SEM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search"),
+        create_story_ticket("Offer | " + epic_name, overview, "Trading", go_live_date_str, "DIGITAL Partner Agency Model"),
+        create_story_ticket("Copy | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("VD | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("Legal | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("AEM | " + epic_name, overview, ["Trading", "Not-Ready"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL AEM Specialists", ["T.com AEM Production"]),
+        create_story_ticket("AEM Removal | " + epic_name, overview, ["Trading", "Not-Ready"], end_date_str, "DIGITAL AEM Specialists", ["T.com AEM Production"]),
+        create_story_ticket("Agora | " + epic_name, overview + "\nRemember to complete and attach Agora config form: https://swimplify.co/projects/telstra/telstra-promos-form/", ["Trading", "AgoraGTM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics", ["Shop"]),
+        create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", ["Trading", "AgoraGTM", "Loyalty"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics", ["Shop"]),
+        create_story_ticket("SEO | " + epic_name, overview, ["Trading", "SEO"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search", ["Search (SEO/SEM)"]),
+        create_story_ticket("SEM | " + epic_name, overview, ["Trading", "SEM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search", ["Search (SEO/SEM)"]),
         create_story_ticket("Pre-Release Review | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(days=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
     ]
 
     # Add Epic Link column
     for ticket in tickets:
         ticket["Epic Link"] = epic_link
-        # Add Team ID column
-        ticket["Team ID"] = team_id_mapping.get(ticket["Team"], "")
 
     df = pd.DataFrame(tickets)
     df["Issue Type"] = "Story"  # Add "Issue Type" column and assign "Story" to all entries
     df = df.rename(columns={"Name": "Summary", "Team": "Team Name", "Team ID": "Team"})
+
+    # Create "Components" column and assign components to relevant tickets
+    df["Components"] = df.apply(lambda row: row["Components"] if pd.notna(row["Components"]) else [], axis=1)
 
     # Add Epic Link column to the DataFrame
     df["Epic Link"] = epic_link
@@ -95,9 +97,7 @@ def main():
 
     if st.button("Submit"):
         epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date:%d %b %y} - {end_date:%d %b %y}"
-        epic_name = epic_name.replace("/", "_")  # Replace "/" with "_" in the epic name
-
-        # Generate CSV and get file name
+        epic_name = epic_name.replace("/", "-")  # Remove '/' from dates for Jira compatibility
         epic_file = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
 
         # Display a download link
