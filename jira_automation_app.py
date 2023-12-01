@@ -25,6 +25,15 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
         "DIGITAL Search": "4577",
     }
 
+    # Create Epic ticket
+    epic_ticket = create_story_ticket(
+        epic_name,
+        overview,
+        "Epic",
+        go_live_date_str,
+        "DIGITAL Partner Agency Model",
+    )
+
     # Create Story tickets
     tickets = [
         create_story_ticket("Offer | " + epic_name, overview, "Trading", go_live_date_str, "DIGITAL Partner Agency Model"),
@@ -37,17 +46,27 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
         create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", ["Trading", "AgoraGTM", "Loyalty"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics"),
         create_story_ticket("SEO | " + epic_name, overview, ["Trading", "SEO"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search"),
         create_story_ticket("SEM | " + epic_name, overview, ["Trading", "SEM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search"),
-        create_story_ticket("Pre-Release Review | " + epic_name, overview, "Trading", (go_live_date - timedelta(days=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("Pre-Release Review | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(days=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
     ]
+
+    # Add Epic Link column
+    for ticket in tickets:
+        ticket["Epic Link"] = epic_link
 
     df = pd.DataFrame(tickets)
     df["Issue Type"] = "Story"  # Add "Issue Type" column and assign "Story" to all entries
+    df = df.rename(columns={"Name": "Summary", "Team": "Team Name", "Team ID": "Team"})
+    
+    # Add Epic Link column to the DataFrame
     df["Epic Link"] = epic_link
-    df = df.rename(columns={"Name": "Summary", "Team": "Team ID"})  # Rename columns
+
+    # Create CSV content
     csv_content = df.to_csv(index=False)
 
-    csv_file_name = f"{epic_name.replace(' ', '_')}.csv"  # Remove spaces and use as the file name
+    # Remove spaces from epic_name for the file name
+    csv_file_name = f"{epic_name.replace(' ', '_')}.csv"
 
+    # Save CSV file
     with open(csv_file_name, "w") as csv_file:
         csv_file.write(csv_content)
 
@@ -56,26 +75,21 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
 def main():
     st.title("Batch Creation of Pre-Paid Trading Tickets")
 
-    # Prompt user for input
+    # Prompt user for information
     product = st.text_input("Product")
     offer = st.text_input("Offer")
-    overview = st.text_area("Overview", type='default')
+    overview = st.text_area("Overview")
     go_live_date = st.date_input("Go-Live Date")
     end_date = st.date_input("End Date")
     epic_link = st.text_input("Epic Link (DCAEG code)")
 
-    # Button to trigger actions
     if st.button("Submit"):
-        epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date.strftime('%d %b %y')} - {end_date.strftime('%d %b %y')}"
-        epic_name = epic_name.replace("/", "-")  # Replace '/' with '-' in the date part
-        epic_name = epic_name.replace(" ", "_")  # Replace spaces with '_' in the epic name
-
-        # Create Epic and Story tickets
-        epic_csv = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
-
-        # Display download section
-        st.subheader("Click to Download")
-        st.markdown(f"Download your CSV file [here](sandbox:/mnt/data/{epic_csv})", unsafe_allow_html=True)
+        epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date:%d %b %y} - {end_date:%d %b %y}"
+        epic_name = epic_name.replace("/", "-")  # Remove '/' from dates for Jira compatibility
+        epic_file = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
+        st.markdown(
+            f"CSV file for Epic '{epic_name}' created. [Download here]({epic_file})"
+        )
 
 if __name__ == "__main__":
     main()
