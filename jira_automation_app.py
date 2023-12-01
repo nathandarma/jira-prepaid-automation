@@ -78,10 +78,10 @@ def main():
     # Prompt user for information
     product = st.text_input("Product")
     offer = st.text_input("Offer")
+    epic_link = st.text_input("Epic Link (DCAEG code)")
     overview = st.text_area("Overview")
     go_live_date = st.date_input("Go-Live Date")
     end_date = st.date_input("End Date")
-    epic_link = st.text_input("Epic Link (DCAEG code)")
 
     if st.button("Submit"):
         epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date:%d %b %y} - {end_date:%d %b %y}"
