@@ -3,6 +3,14 @@ import pandas as pd
 import base64
 from datetime import datetime, timedelta
 
+# Mapping of team names to team IDs
+team_id_mapping = {
+    "DIGITAL Partner Agency Model": "7944",
+    "DIGITAL AEM Specialists": "4550",
+    "DIGITAL Agora Shop and Robotics": "3741",
+    "DIGITAL Search": "4577",
+}
+
 def create_story_ticket(name, description, labels, due_date, team, components=None):
     ticket = {
         "Name": name,
@@ -19,14 +27,6 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     # Convert dates to the format expected by Jira (dd/MMM/yy h:mm a)
     go_live_date_str = go_live_date.strftime("%d/%b/%y %I:%M %p")
     end_date_str = end_date.strftime("%d/%b/%y %I:%M %p")
-
-    # Mapping of team names to team IDs
-    team_id_mapping = {
-        "DIGITAL Partner Agency Model": "7944",
-        "DIGITAL AEM Specialists": "4550",
-        "DIGITAL Agora Shop and Robotics": "3741",
-        "DIGITAL Search": "4577",
-    }
 
     # Create Epic ticket
     epic_ticket = create_story_ticket(
