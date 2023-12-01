@@ -10,6 +10,7 @@ def create_story_ticket(name, description, labels, due_date, team, components=No
         "Labels": labels,
         "Due Date": due_date,
         "Team": team,
+        "Team ID": team_id_mapping.get(team, ""),  # Add Team ID
         "Components": components,
     }
     return ticket
@@ -57,10 +58,10 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
 
     df = pd.DataFrame(tickets)
     df["Issue Type"] = "Story"  # Add "Issue Type" column and assign "Story" to all entries
-    df = df.rename(columns={"Name": "Summary", "Team": "Team Name", "Team ID": "Team"})
+    df = df.rename(columns={"Name": "Summary", "Team": "Team Name", "Team ID": "Team", "Components": "Component"})
 
     # Create "Components" column and assign components to relevant tickets
-    df["Components"] = df["Components"].apply(lambda components: components if pd.notna(components) else "")
+    df["Component"] = df["Component"].apply(lambda components: components if pd.notna(components) else "")
 
     # Add Epic Link column to the DataFrame
     df["Epic Link"] = epic_link
@@ -69,7 +70,7 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     csv_content = df.to_csv(index=False)
 
     # Remove spaces from epic_name for the file name
-    csv_file_name = f"{epic_name.replace(' ', '_')}.csv"
+    csv_file_name = epic_name.replace(" ", "_") + ".csv"
 
     # Create download link
     csv_file = get_download_link(csv_content, csv_file_name)
