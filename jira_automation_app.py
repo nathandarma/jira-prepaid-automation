@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import base64
 from datetime import datetime, timedelta
 
 def create_story_ticket(name, description, labels, due_date, team):
@@ -72,6 +73,13 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
 
     return csv_file_name
 
+def get_download_link(file_path):
+    with open(file_path, "rb") as file:
+        content = file.read()
+    encoded_content = base64.b64encode(content).decode("utf-8")
+    href = f"<a href='data:file/csv;base64,{encoded_content}' download='{file_path}'>Click to Download</a>"
+    return href
+
 def main():
     st.title("Batch Creation of Pre-Paid Trading Tickets")
 
@@ -88,14 +96,8 @@ def main():
         epic_name = epic_name.replace("/", "-")  # Remove '/' from dates for Jira compatibility
         epic_file = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
 
-        # Display a download button
-        st.download_button(
-            label="Download CSV",
-            key="download_button",
-            on_click=None,  # This value will be ignored
-            args=(epic_file,),
-            help="Click to download the CSV file",
-        )
+        # Display a download link
+        st.markdown(get_download_link(epic_file), unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
