@@ -53,11 +53,13 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     # Add Epic Link column
     for ticket in tickets:
         ticket["Epic Link"] = epic_link
+        # Add Team ID column
+        ticket["Team ID"] = team_id_mapping.get(ticket["Team"], "")
 
     df = pd.DataFrame(tickets)
     df["Issue Type"] = "Story"  # Add "Issue Type" column and assign "Story" to all entries
     df = df.rename(columns={"Name": "Summary", "Team": "Team Name", "Team ID": "Team"})
-    
+
     # Add Epic Link column to the DataFrame
     df["Epic Link"] = epic_link
 
