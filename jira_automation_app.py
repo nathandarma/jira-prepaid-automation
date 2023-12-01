@@ -7,7 +7,7 @@ def create_story_ticket(name, description, labels, due_date, team):
     ticket = {
         "Name": name,
         "Description": description,
-        "Labels": labels,
+        "Labels": " ".join(labels),
         "Due Date": due_date,
         "Team": team,
     }
@@ -30,17 +30,17 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     epic_ticket = create_story_ticket(
         epic_name,
         overview,
-        "Epic",
+        ["Epic"],
         go_live_date_str,
         "DIGITAL Partner Agency Model",
     )
 
     # Create Story tickets
     tickets = [
-        create_story_ticket("Offer | " + epic_name, overview, "Trading", go_live_date_str, "DIGITAL Partner Agency Model"),
-        create_story_ticket("Copy | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
-        create_story_ticket("VD | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
-        create_story_ticket("Legal | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("Offer | " + epic_name, overview, ["Trading"], go_live_date_str, "DIGITAL Partner Agency Model"),
+        create_story_ticket("Copy | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("VD | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("Legal | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(weeks=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
         create_story_ticket("AEM | " + epic_name, overview, ["Trading", "Not-Ready"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL AEM Specialists"),
         create_story_ticket("AEM Removal | " + epic_name, overview, ["Trading", "Not-Ready"], end_date_str, "DIGITAL AEM Specialists"),
         create_story_ticket("Agora | " + epic_name, overview + "\nRemember to complete and attach Agora config form: https://swimplify.co/projects/telstra/telstra-promos-form/", ["Trading", "AgoraGTM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics"),
@@ -95,7 +95,9 @@ def main():
 
     if st.button("Submit"):
         epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date:%d %b %y} - {end_date:%d %b %y}"
-        epic_name = epic_name.replace("/", "-")  # Remove '/' from dates for Jira compatibility
+        epic_name = epic_name.replace("/", "_")  # Replace "/" with "_" in the epic name
+
+        # Generate CSV and get file name
         epic_file = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
 
         # Display a download link
