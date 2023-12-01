@@ -87,8 +87,14 @@ def main():
         epic_name = f"Offer | Pre-Paid | {product} - {offer} | {go_live_date:%d %b %y} - {end_date:%d %b %y}"
         epic_name = epic_name.replace("/", "-")  # Remove '/' from dates for Jira compatibility
         epic_file = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
-        st.markdown(
-            f"CSV file for Epic '{epic_name}' created. [Download here]({epic_file})"
+
+        # Display a download button
+        st.download_button(
+            label="Download CSV",
+            key="download_button",
+            on_click=None,  # This value will be ignored
+            args=(epic_file,),
+            help="Click to download the CSV file",
         )
 
 if __name__ == "__main__":
