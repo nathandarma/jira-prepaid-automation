@@ -42,13 +42,13 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
         create_story_ticket("Copy | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
         create_story_ticket("VD | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=4)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
         create_story_ticket("Legal | " + epic_name, overview, "Trading", (go_live_date - timedelta(weeks=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
-        create_story_ticket("AEM | " + epic_name, overview, ["Trading", "Not-Ready"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL AEM Specialists", ["T.com AEM Production"]),
-        create_story_ticket("AEM Removal | " + epic_name, overview, ["Trading", "Not-Ready"], end_date_str, "DIGITAL AEM Specialists", ["T.com AEM Production"]),
-        create_story_ticket("Agora | " + epic_name, overview + "\nRemember to complete and attach Agora config form: https://swimplify.co/projects/telstra/telstra-promos-form/", ["Trading", "AgoraGTM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics", ["Shop"]),
-        create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", ["Trading", "AgoraGTM", "Loyalty"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics", ["Shop"]),
-        create_story_ticket("SEO | " + epic_name, overview, ["Trading", "SEO"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search", ["Search (SEO/SEM)"]),
-        create_story_ticket("SEM | " + epic_name, overview, ["Trading", "SEM"], (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search", ["Search (SEO/SEM)"]),
-        create_story_ticket("Pre-Release Review | " + epic_name, overview, ["Trading"], (go_live_date - timedelta(days=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
+        create_story_ticket("AEM | " + epic_name, overview, "Trading Not-Ready", (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL AEM Specialists", "T.com AEM Production"),
+        create_story_ticket("AEM Removal | " + epic_name, overview, "Trading Not-Ready", end_date_str, "DIGITAL AEM Specialists", "T.com AEM Production"),
+        create_story_ticket("Agora | " + epic_name, overview + "\nRemember to complete and attach Agora config form: https://swimplify.co/projects/telstra/telstra-promos-form/", "Trading AgoraGTM", (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics", "Shop"),
+        create_story_ticket("T+ | " + epic_name, overview + "\nRemember to engage BOH via https://confluence.tools.telstra.com/display/CSB/02.+Engagement+Form", "Trading AgoraGTM Loyalty", (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Agora Shop and Robotics", "Shop"),
+        create_story_ticket("SEO | " + epic_name, overview, "Trading SEO", (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search", "Search (SEO/SEM)"),
+        create_story_ticket("SEM | " + epic_name, overview, "Trading SEM", (go_live_date - timedelta(days=3)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Search", "Search (SEO/SEM)"),
+        create_story_ticket("Pre-Release Review | " + epic_name, overview, "Trading", (go_live_date - timedelta(days=2)).strftime("%d/%b/%y %I:%M %p"), "DIGITAL Partner Agency Model"),
     ]
 
     # Add Epic Link column
@@ -60,7 +60,7 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     df = df.rename(columns={"Name": "Summary", "Team": "Team Name", "Team ID": "Team"})
 
     # Create "Components" column and assign components to relevant tickets
-    df["Components"] = df.apply(lambda row: row["Components"] if pd.notna(row["Components"]) else [], axis=1)
+    df["Components"] = df["Components"].apply(lambda components: components if pd.notna(components) else "")
 
     # Add Epic Link column to the DataFrame
     df["Epic Link"] = epic_link
@@ -71,23 +71,21 @@ def generate_csv(epic_name, overview, go_live_date, end_date, epic_link):
     # Remove spaces from epic_name for the file name
     csv_file_name = f"{epic_name.replace(' ', '_')}.csv"
 
-    # Save CSV file
-    with open(csv_file_name, "w") as csv_file:
-        csv_file.write(csv_content)
+    # Create download link
+    csv_file = get_download_link(csv_content, csv_file_name)
 
-    return csv_file_name
+    return csv_file
 
-def get_download_link(file_path):
-    with open(file_path, "rb") as file:
-        content = file.read()
-    encoded_content = base64.b64encode(content).decode("utf-8")
-    href = f"<a href='data:file/csv;base64,{encoded_content}' download='{file_path}'>Click to Download</a>"
+def get_download_link(csv_content, csv_file_name):
+    # Generate download link
+    b64 = base64.b64encode(csv_content.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="{csv_file_name}">Click to Download</a>'
     return href
 
 def main():
     st.title("Batch Creation of Pre-Paid Trading Tickets")
 
-    # Prompt user for information
+    # Input fields
     product = st.text_input("Product")
     offer = st.text_input("Offer")
     epic_link = st.text_input("Epic Link (DCAEG code)")
@@ -101,7 +99,7 @@ def main():
         epic_file = generate_csv(epic_name, overview, go_live_date, end_date, epic_link)
 
         # Display a download link
-        st.markdown(get_download_link(epic_file), unsafe_allow_html=True)
+        st.markdown(epic_file, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
